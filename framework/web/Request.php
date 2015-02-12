@@ -588,7 +588,9 @@ class Request extends \yii\base\Request
         if ($this->_scriptUrl === null) {
             $scriptFile = $this->getScriptFile();
             $scriptName = basename($scriptFile);
-            if (basename($_SERVER['SCRIPT_NAME']) === $scriptName) {
+            if (!empty($_SERVER['DOCUMENT_ROOT']) && strpos($scriptFile, $_SERVER['DOCUMENT_ROOT']) === 0) {
+                $this->_scriptUrl = str_replace('\\', '/', str_replace($_SERVER['DOCUMENT_ROOT'], '', $scriptFile));
+            } elseif (basename($_SERVER['SCRIPT_NAME']) === $scriptName) {
                 $this->_scriptUrl = $_SERVER['SCRIPT_NAME'];
             } elseif (basename($_SERVER['PHP_SELF']) === $scriptName) {
                 $this->_scriptUrl = $_SERVER['PHP_SELF'];
@@ -596,8 +598,6 @@ class Request extends \yii\base\Request
                 $this->_scriptUrl = $_SERVER['ORIG_SCRIPT_NAME'];
             } elseif (($pos = strpos($_SERVER['PHP_SELF'], '/' . $scriptName)) !== false) {
                 $this->_scriptUrl = substr($_SERVER['SCRIPT_NAME'], 0, $pos) . '/' . $scriptName;
-            } elseif (!empty($_SERVER['DOCUMENT_ROOT']) && strpos($scriptFile, $_SERVER['DOCUMENT_ROOT']) === 0) {
-                $this->_scriptUrl = str_replace('\\', '/', str_replace($_SERVER['DOCUMENT_ROOT'], '', $scriptFile));
             } else {
                 throw new InvalidConfigException('Unable to determine the entry script URL.');
             }
